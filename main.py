@@ -138,4 +138,4 @@ def get_orders():
 
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=False, host="192.168.1.68")
