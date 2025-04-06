@@ -27,7 +27,7 @@ def generate_id(orders):
     return max(order['id'] for order in orders) + 1
 
 
-@app.route('/add_order', methods=['GET'])
+@app.route('/add_order', methods=['POST'])
 def add_orders():
     user_data = request.get_json()
     if not user_data:
