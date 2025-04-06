@@ -80,6 +80,75 @@ def delete_order_id(order_id):
         }), 500
 
 
+@app.route('/get_order_tgId/<int:order_id>', methods=['GET'])
+def get_ordertg(order_id):
+    """Возвращает заказ по указанному ID"""
+    try:
+        orders = load_orders()
+
+        # Ищем заказ с указанным ID
+        order = next((o for o in orders if o['tgId'] == order_id), None)
+
+        if order:
+            return jsonify({
+                "status": "success",
+                "order": order
+            }), 200
+        else:
+            return jsonify({
+                "status": "error",
+                "message": f"Order with ID {order_id} not found"
+            }), 404
+
+    except Exception as e:
+        return jsonify({
+            "status": "error",
+            "message": str(e)
+        }), 500
+
+@app.route('/get_order_id/<int:order_id>', methods=['GET'])
+def get_order_id(order_id):
+    """Возвращает заказ по указанному ID"""
+    try:
+        orders = load_orders()
+
+        # Ищем заказ с указанным ID
+        order = next((o for o in orders if o['id'] == order_id), None)
+
+        if order:
+            return jsonify({
+                "status": "success",
+                "order": order
+            }), 200
+        else:
+            return jsonify({
+                "status": "error",
+                "message": f"Order with ID {order_id} not found"
+            }), 404
+
+    except Exception as e:
+        return jsonify({
+            "status": "error",
+            "message": str(e)
+        }), 500
+
+@app.route('/get_all_orders', methods=['GET'])
+def get_all_orders():
+    """Возвращает все заказы"""
+    try:
+        orders = load_orders()
+        return jsonify({
+            "status": "success",
+            "count": len(orders),
+            "orders": orders
+        }), 200
+    except Exception as e:
+        return jsonify({
+            "status": "error",
+            "message": str(e)
+        }), 500
+
+
 @app.route('/delete_order_tgId/<int:order_id>', methods=['DELETE'])
 def delete_order_tgId(order_id):
     try:
@@ -130,12 +199,6 @@ def clear_orders():
         }), 500
 
 
-@app.route('/get_orders', methods=['GET'])
-def get_orders():
-
-    orders = load_orders()
-    return jsonify(orders), 200
-
-
 if __name__ == '__main__':
     app.run(debug=False, host="192.168.1.68")
+#    app.run(debug=True)
