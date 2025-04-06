@@ -81,7 +81,7 @@ def delete_order_id(order_id):
 
 
 @app.route('/get_order_tgId/<int:order_id>', methods=['GET'])
-def get_ordertg(order_id):
+def get_order_tgId(order_id):
     """Возвращает заказ по указанному ID"""
     try:
         orders = load_orders()
