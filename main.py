@@ -29,12 +29,18 @@ def generate_id(orders):
 
 @app.route('/add_order', methods=['POST'])
 def add_orders():
+    """Добавление товара"""
     user_data = request.get_json()
     if not user_data:
         return jsonify({'error': 'No JSON data provided'}), 400
     orders = load_orders()
     new_id = generate_id(orders)
     user_data['id'] = new_id
+    user_data['status'] = ''
+    user_data['status'] = ''
+    user_data['count'] = -1
+    user_data['price'] = -1
+    user_data['location'] = ''
     orders.append(user_data)
     save_orders(orders)
     return jsonify({'message': 'User added successfully', 'id': new_id}), 200
@@ -42,29 +48,20 @@ def add_orders():
 
 @app.route('/delete_order_id/<int:order_id>', methods=['DELETE'])
 def delete_order_id(order_id):
-    """Удаляет товар по ID"""
+    """Удаляение заказа по id"""
     try:
-        # Загружаем текущие товары
         orders = load_orders()
-
-        # Находим индекс товара с указанным ID
         order_index = None
         for i, order in enumerate(orders):
             if order.get('id') == order_id:
                 order_index = i
                 break
-
-        # Если товар не найден
         if order_index is None:
             return jsonify({
                 "status": "error",
                 "message": f"Product with ID {order_id} not found"
             }), 404
-
-        # Удаляем товар
         deleted_order = orders.pop(order_index)
-
-        # Сохраняем обновленный список
         save_orders(orders)
 
         return jsonify({
@@ -82,7 +79,7 @@ def delete_order_id(order_id):
 
 @app.route('/get_order_tgId/<int:order_id>', methods=['GET'])
 def get_order_tgId(order_id):
-    """Возвращает заказ по указанному ID"""
+    """Возвращаение заказ по указанному tg id """
     try:
         orders = load_orders()
 
@@ -108,7 +105,7 @@ def get_order_tgId(order_id):
 
 @app.route('/get_order_id/<int:order_id>', methods=['GET'])
 def get_order_id(order_id):
-    """Возвращает заказ по указанному ID"""
+    """Возвращение заказа по указанному id"""
     try:
         orders = load_orders()
 
@@ -134,7 +131,7 @@ def get_order_id(order_id):
 
 @app.route('/get_all_orders', methods=['GET'])
 def get_all_orders():
-    """Возвращает все заказы"""
+    """Возвращение всех заказов"""
     try:
         orders = load_orders()
         return jsonify({
@@ -151,6 +148,7 @@ def get_all_orders():
 
 @app.route('/delete_order_tgId/<int:order_id>', methods=['DELETE'])
 def delete_order_tgId(order_id):
+    """Удаление заказа по tg id"""
     try:
         orders = load_orders()
         order_index = None
@@ -177,6 +175,32 @@ def delete_order_tgId(order_id):
         }), 500
 
 
+@app.route('/update_order/<int:order_id>', methods=['PATCH'])
+def update_order(order_id):
+    """Обновлние заказ по ID"""
+    update_data = request.get_json()
+    if not update_data:
+        return jsonify({'error': 'No data provided'}), 400
+    orders = load_orders()
+    order_found = False
+    for order in orders:
+        if order['id'] == order_id:
+            for key, value in update_data.items():
+                if key in order:
+                    order[key] = value
+            order_found = True
+            break
+
+    if not order_found:
+        return jsonify({'error': 'Order not found'}), 404
+    save_orders(orders)
+
+    return jsonify({'message': 'Order updated successfully'}), 200
+
+
+
+
+
 
 @app.route('/clear_orders', methods=['DELETE'])
 def clear_orders():
@@ -200,5 +224,5 @@ def clear_orders():
 
 
 if __name__ == '__main__':
-    app.run(debug=False, host="192.168.1.68")
+    app.run(debug=False, host="192.168.8.38")
 #    app.run(debug=True)
