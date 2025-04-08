@@ -1,12 +1,14 @@
 from flask import Flask, request, jsonify
+from flask_cors import CORS
 import json
 import os
 
 app = Flask(__name__)
+CORS(app)
 ORDERS_FILE = 'orders.json'
 
 
-# Загружаем существующих пользователей или создаем пустой список
+
 def load_orders():
     if os.path.exists(ORDERS_FILE):
         with open(ORDERS_FILE, 'r') as f:
@@ -14,13 +16,12 @@ def load_orders():
     return []
 
 
-# Сохраняем пользователей в файл
 def save_orders(orders):
     with open(ORDERS_FILE, 'w') as f:
         json.dump(orders, f, indent=4)
 
 
-# Генерируем новый ID
+
 def generate_id(orders):
     if not orders:
         return 1
@@ -77,13 +78,12 @@ def delete_order_id(order_id):
         }), 500
 
 
+
 @app.route('/get_order_tgId/<int:order_id>', methods=['GET'])
 def get_order_tgId(order_id):
     """Возвращаение заказ по указанному tg id """
     try:
         orders = load_orders()
-
-        # Ищем заказ с указанным ID
         order = next((o for o in orders if o['tgId'] == order_id), None)
 
         if order:
@@ -103,13 +103,13 @@ def get_order_tgId(order_id):
             "message": str(e)
         }), 500
 
+
+
 @app.route('/get_order_id/<int:order_id>', methods=['GET'])
 def get_order_id(order_id):
     """Возвращение заказа по указанному id"""
     try:
         orders = load_orders()
-
-        # Ищем заказ с указанным ID
         order = next((o for o in orders if o['id'] == order_id), None)
 
         if order:
@@ -129,6 +129,8 @@ def get_order_id(order_id):
             "message": str(e)
         }), 500
 
+
+
 @app.route('/get_all_orders', methods=['GET'])
 def get_all_orders():
     """Возвращение всех заказов"""
@@ -144,6 +146,7 @@ def get_all_orders():
             "status": "error",
             "message": str(e)
         }), 500
+
 
 
 @app.route('/delete_order_tgId/<int:order_id>', methods=['DELETE'])
@@ -173,6 +176,7 @@ def delete_order_tgId(order_id):
             "status": "error",
             "message": str(e)
         }), 500
+
 
 
 @app.route('/update_order/<int:order_id>', methods=['PATCH'])
@@ -206,7 +210,6 @@ def update_order(order_id):
 def clear_orders():
     """Полностью очищает файл с заказами"""
     try:
-        # Перезаписываем файл пустым списком
         with open(ORDERS_FILE, 'w') as f:
             json.dump([], f)
 
@@ -224,5 +227,6 @@ def clear_orders():
 
 
 if __name__ == '__main__':
-    app.run(debug=False, host="192.168.8.38")
+#    app.run(debug=False, host="192.168.8.38")
+    app.run(debug=False, host="192.168.1.68")
 #    app.run(debug=True)
