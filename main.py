@@ -181,7 +181,7 @@ def delete_order_tgId(order_id):
 
 @app.route('/update_order/<int:order_id>', methods=['PATCH'])
 def update_order(order_id):
-    """Обновлние заказ по ID"""
+    """Обновлние заказ по ID """
     update_data = request.get_json()
     if not update_data:
         return jsonify({'error': 'No data provided'}), 400
