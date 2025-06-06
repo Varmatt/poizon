@@ -2,7 +2,6 @@ from flask import Flask, request, jsonify
 from flask_cors import CORS
 
 import json
-import os
 import psycopg2
 from psycopg2 import sql
 app = Flask(__name__)
@@ -11,11 +10,11 @@ ORDERS_FILE = 'orders.json'
 
 # Настройки подключения к PostgreSQL (замените на свои)
 DB_CONFIG = {
-    "user": "postgres",
-    "password": "admin",
+    "user": "poizonApi",
+    "password": "401_SSD52",
     "host": "localhost",
     "port": "5432",
-    "database": "postgres"
+    "database": "poizon"
 }
 
 
