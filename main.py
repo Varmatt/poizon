@@ -123,7 +123,11 @@ def get_order_by_id(order_id):
 @app.route('/get_all_orders', methods=['GET'])
 def get_all_orders():
     try:
-        conn = get_connection()
+        try:
+            conn = get_connection()
+        except Exception as db_error:
+            return jsonify({'status': 'error', 'message': f'Connection failed: {str(db_error)}'}), 500
+
         cursor = conn.cursor()
         cursor.execute("SELECT * FROM orders ORDER BY id ASC")
         rows = cursor.fetchall()
