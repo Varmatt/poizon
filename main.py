@@ -252,7 +252,7 @@ def filter_orders():
 
 
 init_db()
-get_all_orders()
+
 
 if __name__ == '__main__':
     app.run(debug=True)
