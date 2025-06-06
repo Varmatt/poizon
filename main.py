@@ -17,7 +17,6 @@ DB_CONFIG = {
     "database": "poizon"
 }
 
-
 def get_connection():
     """Устанавливает соединение с PostgreSQL."""
     return psycopg2.connect(**DB_CONFIG)
