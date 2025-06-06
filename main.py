@@ -4,6 +4,8 @@ from flask_cors import CORS
 import psycopg2
 from psycopg2 import sql
 import logging
+import requests
+
 
 app = Flask(__name__)
 CORS(app)
@@ -260,4 +262,7 @@ init_db()
 
 if __name__ == '__main__':
     app.run(debug=True)
+    response = requests.get('http://127.0.0.1:5000/get_all_orders')
+    print(response.status_code)
+    print(response.json())
 
