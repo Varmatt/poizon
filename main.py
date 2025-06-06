@@ -25,6 +25,7 @@ def get_connection():
     return psycopg2.connect(**DB_CONFIG)
 
 def create_orders_table():
+    conn = None
     try:
         conn = get_connection()
         cursor = conn.cursor()
