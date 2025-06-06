@@ -124,23 +124,20 @@ def get_order_by_id(order_id):
 
 @app.route('/get_all_orders', methods=['GET'])
 def get_all_orders():
-    try:
-        try:
-            conn = get_connection()
-        except Exception as db_error:
-            return jsonify({'status': 'error', 'message': f'Connection failed: {str(db_error)}'}), 500
+    conn = get_connection()
 
-        cursor = conn.cursor()
-        cursor.execute("SELECT * FROM orders ORDER BY id ASC")
-        rows = cursor.fetchall()
-        columns = [desc[0] for desc in cursor.description]
-        orders = [dict(zip(columns, row)) for row in rows]
-        return jsonify({'status': 'success', 'orders': orders, 'count': len(orders)}), 200
-    except Exception as e:
-        return jsonify({'status': 'error', 'message': str(e)}), 500
-    finally:
-        cursor.close()
-        conn.close()
+
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM orders ORDER BY id ASC")
+    rows = cursor.fetchall()
+    columns = [desc[0] for desc in cursor.description]
+    orders = [dict(zip(columns, row)) for row in rows]
+    cursor.close()
+    conn.close()
+    return jsonify({'status': 'success', 'orders': orders, 'count': len(orders)}), 200
+
+
+
 
 @app.route('/delete_order_id/<int:order_id>', methods=['DELETE'])
 def delete_order_by_id(order_id):
