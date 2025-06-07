@@ -86,6 +86,51 @@ def add_order():
         cursor.close()
         conn.close()
 
+
+def test_add_order():
+    try:
+        conn = get_connection()
+        cursor = conn.cursor()
+
+        # Получение нового ID
+        cursor.execute("SELECT COALESCE(MAX(id), 0) + 1 FROM orders")
+        new_id = cursor.fetchone()[0]
+
+        # Тестовые данные
+        order_data = {
+            'tgid': 123456,
+            'username': 'test_user',
+            'ordertext': 'Test order text',
+            'status': '',
+            'count': -1,
+            'price': -1,
+            'location': ''
+        }
+
+        # Вставка записи
+        cursor.execute("""
+            INSERT INTO orders (id, tgid, username, ordertext, status, count, price, location)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+        """, (
+            new_id,
+            order_data['tgid'],
+            order_data['username'],
+            order_data['ordertext'],
+            order_data['status'],
+            order_data['count'],
+            order_data['price'],
+            order_data['location']
+        ))
+
+        conn.commit()
+        print(f"✅ Order добавлен с ID {new_id}")
+    except Exception as e:
+        print(f"❌ Ошибка при добавлении заказа: {e}")
+    finally:
+        cursor.close()
+        conn.close()
+
+
 @app.route('/get_order_tgId/<int:tgid>', methods=['GET'])
 def get_order_by_tgid(tgid):
     try:
