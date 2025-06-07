@@ -12,7 +12,7 @@ CORS(app)
 
 # Настройки подключения к PostgreSQL
 DB_CONFIG = {
-    "user": "poizonpi",
+    "user": "poizoanpi",
     "password": "91546",
     "host": "localhost",
     "port": "5432",
