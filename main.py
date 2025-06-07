@@ -12,7 +12,7 @@ CORS(app)
 
 # Настройки подключения к PostgreSQL
 DB_CONFIG = {
-    "user": "poizonapi",
+    "user": "poizonpi",
     "password": "91546",
     "host": "localhost",
     "port": "5432",
@@ -134,6 +134,7 @@ def get_all_orders():
     orders = [dict(zip(columns, row)) for row in rows]
     cursor.close()
     conn.close()
+
     return jsonify({'status': 'success', 'orders': orders, 'count': len(orders)}), 200
 
 
