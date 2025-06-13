@@ -14,7 +14,7 @@ def add_order():
         cursor = conn.cursor()
         cursor.execute("SELECT id FROM orders WHERE tgid = %s AND status = '' AND archive = 0", (data['tgid'],))
         if cursor.fetchone():
-            return jsonify({'message': 'Pending order already exists'}), 400
+            return jsonify({'message': 'Pending order already exists'}), 409
         cursor.execute("SELECT COALESCE(MAX(id), 0) + 1 FROM orders")
         new_id = cursor.fetchone()[0]
         cursor.execute("""
