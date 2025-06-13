@@ -11,11 +11,11 @@ CORS(app)
 
 # Настройки подключения к PostgreSQL
 DB_CONFIG = {
-    "user": "postgres",
-    "password": "admin",
+    "user": "poizonapi",
+    "password": "91546",
     "host": "localhost",
     "port": "5432",
-    "database": "postgres"
+    "database": "poizon"
 }
 
 # Логгирование
@@ -261,7 +261,8 @@ def filter_orders():
         rows = cursor.fetchall()
         columns = [desc[0] for desc in cursor.description]
         orders = [dict(zip(columns, row)) for row in rows]
-        return jsonify(orders), 200
+        return jsonify({'status': 'success', 'orders': orders, 'count': len(orders)}), 200
+
     except Exception as e:
         return jsonify({'error': str(e)}), 500
     finally:
