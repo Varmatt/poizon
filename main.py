@@ -6,20 +6,19 @@ from psycopg2 import sql
 import logging
 import requests
 
-
 app = Flask(__name__)
 CORS(app)
 
 # Настройки подключения к PostgreSQL
 DB_CONFIG = {
-    "user": "poizonapi",
-    "password": "91546",
+    "user": "postgres",
+    "password": "admin",
     "host": "localhost",
     "port": "5432",
-    "database": "poizon"
+    "database": "postgres"
 }
 
-# Установим логгирование
+# Логгирование
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
@@ -40,7 +39,8 @@ def create_orders_table():
                 status TEXT NOT NULL,
                 count INTEGER,
                 price INTEGER,
-                location TEXT
+                location TEXT,
+                archive INTEGER DEFAULT 0
             );
         """)
         conn.commit()
@@ -50,7 +50,6 @@ def create_orders_table():
         if conn:
             cursor.close()
             conn.close()
-
 
 def init_db():
     create_orders_table()
@@ -65,7 +64,7 @@ def add_order():
         conn = get_connection()
         cursor = conn.cursor()
 
-        cursor.execute("SELECT id FROM orders WHERE tgid = %s AND status = ''", (data['tgid'],))
+        cursor.execute("SELECT id FROM orders WHERE tgid = %s AND status = '' AND archive = 0", (data['tgid'],))
         if cursor.fetchone():
             return jsonify({'message': 'Pending order already exists'}), 400
 
@@ -73,8 +72,8 @@ def add_order():
         new_id = cursor.fetchone()[0]
 
         cursor.execute("""
-            INSERT INTO orders (id, tgid, username, ordertext, status, count, price, location)
-            VALUES (%s, %s, %s, %s, '', -1, -1, '')
+            INSERT INTO orders (id, tgid, username, ordertext, status, count, price, location, archive)
+            VALUES (%s, %s, %s, %s, '', -1, -1, '', 0)
         """, (new_id, data['tgid'], data['username'], data['ordertext']))
 
         conn.commit()
@@ -86,50 +85,22 @@ def add_order():
         cursor.close()
         conn.close()
 
-
-def test_add_order():
+@app.route('/archive_tgid/<int:tgid>', methods=['PATCH'])
+def archive_orders_by_tgid(tgid):
     try:
         conn = get_connection()
         cursor = conn.cursor()
-
-        # Получение нового ID
-        cursor.execute("SELECT COALESCE(MAX(id), 0) + 1 FROM orders")
-        new_id = cursor.fetchone()[0]
-
-        # Тестовые данные
-        order_data = {
-            'tgid': 123456,
-            'username': 'test_user',
-            'ordertext': 'Test order text',
-            'status': '',
-            'count': -1,
-            'price': -1,
-            'location': ''
-        }
-
-        # Вставка записи
-        cursor.execute("""
-            INSERT INTO orders (id, tgid, username, ordertext, status, count, price, location)
-            VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
-        """, (
-            new_id,
-            order_data['tgid'],
-            order_data['username'],
-            order_data['ordertext'],
-            order_data['status'],
-            order_data['count'],
-            order_data['price'],
-            order_data['location']
-        ))
-
+        cursor.execute("UPDATE orders SET archive = 1 WHERE tgid = %s AND archive = 0", (tgid,))
+        if cursor.rowcount == 0:
+            return jsonify({'message': 'No active orders to archive'}), 404
         conn.commit()
-        print(f"✅ Order добавлен с ID {new_id}")
+        return jsonify({'message': f'{cursor.rowcount} order(s) archived'}), 200
     except Exception as e:
-        print(f"❌ Ошибка при добавлении заказа: {e}")
+        conn.rollback()
+        return jsonify({'error': str(e)}), 500
     finally:
         cursor.close()
         conn.close()
-
 
 @app.route('/get_order_tgId/<int:tgid>', methods=['GET'])
 def get_order_by_tgid(tgid):
@@ -170,20 +141,14 @@ def get_order_by_id(order_id):
 @app.route('/get_all_orders', methods=['GET'])
 def get_all_orders():
     conn = get_connection()
-
-
     cursor = conn.cursor()
-    cursor.execute("SELECT * FROM orders ORDER BY id ASC")
+    cursor.execute("SELECT * FROM orders WHERE archive = 0 ORDER BY id ASC")
     rows = cursor.fetchall()
     columns = [desc[0] for desc in cursor.description]
     orders = [dict(zip(columns, row)) for row in rows]
     cursor.close()
     conn.close()
-
     return jsonify({'status': 'success', 'orders': orders, 'count': len(orders)}), 200
-
-
-
 
 @app.route('/delete_order_id/<int:order_id>', methods=['DELETE'])
 def delete_order_by_id(order_id):
@@ -225,7 +190,7 @@ def update_order(order_id):
     if not data:
         return jsonify({'error': 'No data provided'}), 400
 
-    allowed_fields = ['tgid', 'username', 'ordertext', 'status', 'count', 'price', 'location']
+    allowed_fields = ['tgid', 'username', 'ordertext', 'status', 'count', 'price', 'location', 'archive']
     update_fields = []
     update_values = []
 
@@ -278,11 +243,15 @@ def filter_orders():
     query = "SELECT * FROM orders"
     values = []
 
-    if filters:
-        conditions = []
-        for key, value in filters.items():
-            conditions.append(f"{key} = %s")
-            values.append(value)
+    conditions = []
+    for key, value in filters.items():
+        conditions.append(f"{key} = %s")
+        values.append(value)
+
+    if 'archive' not in filters:
+        conditions.append("archive = 0")
+
+    if conditions:
         query += " WHERE " + " AND ".join(conditions)
 
     try:
@@ -299,13 +268,7 @@ def filter_orders():
         cursor.close()
         conn.close()
 
-
 init_db()
-
 
 if __name__ == '__main__':
     app.run(debug=True)
-    response = requests.get('http://127.0.0.1:5000/get_all_orders')
-    print(response.status_code)
-    print(response.json())
-
